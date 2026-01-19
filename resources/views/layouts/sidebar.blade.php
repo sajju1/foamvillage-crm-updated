@@ -1,70 +1,118 @@
-<aside class="w-64 bg-gray-900 text-gray-100 flex flex-col">
-
+<aside class="w-64 bg-gray-800 text-gray-100 min-h-screen flex flex-col">
     {{-- Logo / Brand --}}
-    <div class="px-6 py-4 border-b border-gray-800">
-        <span class="text-xl font-semibold tracking-wide">
-            Foam Village
-        </span>
-        <p class="text-xs text-gray-400 mt-1">
-            CRM System
-        </p>
+    <div class="px-6 py-4 text-lg font-semibold border-b border-gray-700">
+        FoamVillage CRM
     </div>
 
     {{-- Navigation --}}
-    <nav class="flex-1 px-4 py-6 space-y-6">
+    <nav class="flex-1 px-4 py-4 space-y-6 text-sm">
 
-        {{-- Section: Setup --}}
+        {{-- MAIN --}}
         <div>
-            <p class="text-xs uppercase tracking-wider text-gray-400 mb-2">
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
+                Main
+            </p>
+
+            <a href="{{ route('dashboard') }}"
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('dashboard') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                Dashboard
+            </a>
+        </div>
+
+        {{-- SETUP --}}
+        <div>
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
                 Setup
             </p>
 
             <a href="{{ route('company.index') }}"
-               class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition">
-                <svg class="h-5 w-5 mr-3 text-gray-400"
-                     xmlns="http://www.w3.org/2000/svg"
-                     fill="none"
-                     viewBox="0 0 24 24"
-                     stroke="currentColor">
-                    <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M3 7h18M3 12h18M3 17h18" />
-                </svg>
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('company.*') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
                 Companies
             </a>
         </div>
 
-        {{-- Section: Core Modules (disabled for now) --}}
+        {{-- PRODUCTS --}}
         <div>
-            <p class="text-xs uppercase tracking-wider text-gray-400 mb-2">
-                Core
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
+                Products
             </p>
 
-            <div class="space-y-1 text-gray-500 text-sm">
-                <div class="px-3 py-2 rounded-md bg-gray-800 opacity-60">
-                    Products
-                </div>
-                <div class="px-3 py-2 rounded-md bg-gray-800 opacity-60">
-                    Customers
-                </div>
-                <div class="px-3 py-2 rounded-md bg-gray-800 opacity-60">
-                    Orders
-                </div>
-                <div class="px-3 py-2 rounded-md bg-gray-800 opacity-60">
-                    Invoices
-                </div>
-                <div class="px-3 py-2 rounded-md bg-gray-800 opacity-60">
-                    Inventory
-                </div>
+            <a href="{{ route('products.index') }}"
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('products.*') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                Products
+            </a>
+
+            <a href="{{ route('product-categories.index') }}"
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('product-categories.*') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                Product Categories
+            </a>
+        </div>
+
+        {{-- PRICING & FORMULAS --}}
+        <div>
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
+                Pricing & Formulas
+            </p>
+
+            <a href="{{ route('foam-types.index') }}"
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('foam-types.*') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                Foam Types
+            </a>
+
+            <a href="{{ route('pricing.options') }}"
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('pricing.options*') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                Product Options
+            </a>
+        </div>
+
+        {{-- CUSTOMERS --}}
+        <div>
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
+                Customers
+            </p>
+
+            <a href="{{ route('customers.index') }}"
+               class="flex items-center px-3 py-2 rounded-md
+               {{ request()->routeIs('customers.*') ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700' }}">
+                Customers
+            </a>
+        </div>
+
+        {{-- OPERATIONS --}}
+        <div>
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
+                Operations
+            </p>
+
+            <div class="px-3 py-2 rounded-md text-gray-500 cursor-not-allowed">
+                Orders <span class="ml-2 text-xs">(coming soon)</span>
+            </div>
+
+            <div class="px-3 py-2 rounded-md text-gray-500 cursor-not-allowed">
+                Invoices <span class="ml-2 text-xs">(coming soon)</span>
+            </div>
+
+            <div class="px-3 py-2 rounded-md text-gray-500 cursor-not-allowed">
+                Inventory <span class="ml-2 text-xs">(coming soon)</span>
+            </div>
+        </div>
+
+        {{-- SYSTEM --}}
+        <div>
+            <p class="px-2 mb-2 text-xs uppercase tracking-wider text-gray-400">
+                System
+            </p>
+
+            <div class="px-3 py-2 rounded-md text-gray-500 cursor-not-allowed">
+                Users & Permissions <span class="ml-2 text-xs">(later)</span>
             </div>
         </div>
 
     </nav>
-
-    {{-- Footer --}}
-    <div class="px-6 py-4 border-t border-gray-800 text-xs text-gray-400">
-        © {{ date('Y') }} Foam Village
-    </div>
-
 </aside>
