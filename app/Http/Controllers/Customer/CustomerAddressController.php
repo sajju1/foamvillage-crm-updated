@@ -31,11 +31,7 @@ class CustomerAddressController extends Controller
 
             $type = $validated['address_type'];
 
-            /*
-            |--------------------------------------------------
-            | Registered & Billing: exactly ONE active allowed
-            |--------------------------------------------------
-            */
+            // Registered & Billing: only one active allowed
             if (in_array($type, ['registered', 'billing'], true)) {
                 CustomerAddress::where('customer_id', $customer->id)
                     ->where('address_type', $type)
@@ -47,11 +43,7 @@ class CustomerAddressController extends Controller
                     ]);
             }
 
-            /*
-            |--------------------------------------------------
-            | Delivery: default handling
-            |--------------------------------------------------
-            */
+            // Delivery default handling
             $isDefault = false;
 
             if ($type === 'delivery') {
@@ -60,16 +52,15 @@ class CustomerAddressController extends Controller
                     ->where('is_active', true)
                     ->count();
 
-                // First delivery address MUST be default
+                // First delivery must be default
                 if ($activeDeliveryCount === 0) {
                     $isDefault = true;
                 } elseif (!empty($validated['is_default'])) {
                     $isDefault = true;
 
-                    // Unset previous default
                     CustomerAddress::where('customer_id', $customer->id)
                         ->where('address_type', 'delivery')
-                        ->where('is_default', true)
+                        ->where('is_active', true)
                         ->update(['is_default' => false]);
                 }
             }
@@ -93,8 +84,9 @@ class CustomerAddressController extends Controller
             ->route('customers.show', $customer)
             ->with('success', 'Address added successfully.');
     }
+
     /**
-     * Show form to create a new address for a customer.
+     * Show form to create a new address.
      */
     public function create(Request $request, Customer $customer)
     {
@@ -119,9 +111,8 @@ class CustomerAddressController extends Controller
         return view('customers.addresses.edit', compact('address'));
     }
 
-
     /**
-     * Update an existing customer address.
+     * Update an existing address.
      */
     public function update(Request $request, CustomerAddress $address)
     {
@@ -138,11 +129,6 @@ class CustomerAddressController extends Controller
 
         DB::transaction(function () use ($address, $validated) {
 
-            /*
-            |--------------------------------------------------
-            | Delivery default switching (ACTIVE ONLY)
-            |--------------------------------------------------
-            */
             if (
                 $address->address_type === 'delivery' &&
                 !empty($validated['is_default']) &&
@@ -173,51 +159,52 @@ class CustomerAddressController extends Controller
      */
     public function deactivate(CustomerAddress $address)
     {
-        DB::transaction(function () use ($address) {
+        // ❌ No DB transaction needed for validation logic
+        if ($address->is_active) {
 
-            /*
-            |--------------------------------------------------
-            | Prevent breaking required address rules
-            |--------------------------------------------------
-            */
-            if ($address->is_active) {
+            // Registered & Billing must always exist
+            if (in_array($address->address_type, ['registered', 'billing'], true)) {
+                $activeCount = CustomerAddress::where('customer_id', $address->customer_id)
+                    ->where('address_type', $address->address_type)
+                    ->where('is_active', true)
+                    ->count();
 
-                // Registered & Billing must always exist
-                if (in_array($address->address_type, ['registered', 'billing'], true)) {
-                    $activeCount = CustomerAddress::where('customer_id', $address->customer_id)
-                        ->where('address_type', $address->address_type)
-                        ->where('is_active', true)
-                        ->count();
-
-                    if ($activeCount <= 1) {
-                        abort(422, 'This address type is required and cannot be removed.');
-                    }
-                }
-
-                // Delivery: must have at least one active
-                if ($address->address_type === 'delivery') {
-                    $activeDeliveryCount = CustomerAddress::where('customer_id', $address->customer_id)
-                        ->where('address_type', 'delivery')
-                        ->where('is_active', true)
-                        ->count();
-
-                    if ($activeDeliveryCount <= 1) {
-                        abort(422, 'At least one active delivery address is required.');
-                    }
-
-                    // Default cannot be deactivated directly
-                    if ($address->is_default) {
-                        abort(422, 'Change the default delivery address before deactivating this one.');
-                    }
+                if ($activeCount <= 1) {
+                    return back()->with(
+                        'error',
+                        'This address type is required and cannot be removed.'
+                    );
                 }
             }
 
-            $address->update([
-                'is_active'      => false,
-                'is_default'     => false,
-                'deactivated_at' => now(),
-            ]);
-        });
+            // Delivery rules
+            if ($address->address_type === 'delivery') {
+                $activeDeliveryCount = CustomerAddress::where('customer_id', $address->customer_id)
+                    ->where('address_type', 'delivery')
+                    ->where('is_active', true)
+                    ->count();
+
+                if ($activeDeliveryCount <= 1) {
+                    return back()->with(
+                        'error',
+                        'At least one active delivery address is required.'
+                    );
+                }
+
+                if ($address->is_default) {
+                    return back()->with(
+                        'error',
+                        'Please set another delivery address as default before deactivating this one.'
+                    );
+                }
+            }
+        }
+
+        $address->update([
+            'is_active'      => false,
+            'is_default'     => false,
+            'deactivated_at' => now(),
+        ]);
 
         return back()->with('success', 'Address deactivated successfully.');
     }

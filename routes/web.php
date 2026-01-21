@@ -18,12 +18,15 @@ use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Customer\CustomerStatusController;
 use App\Http\Controllers\Customer\CustomerAddressController;
 use App\Http\Controllers\Customer\CustomerPortfolioController;
+use App\Http\Controllers\Orders\OrderController;
+
 
 /*
 |--------------------------------------------------------------------------
 | Public
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -167,27 +170,32 @@ Route::middleware('auth')->group(function () {
     */
 
     // SHOW address creation form (registered / billing / delivery)
-    Route::get('/customers/{customer}/addresses/create',
+    Route::get(
+        '/customers/{customer}/addresses/create',
         [CustomerAddressController::class, 'create']
     )->name('customers.addresses.create');
 
     // SHOW delivery address edit form
-    Route::get('/customers/addresses/{address}/edit',
+    Route::get(
+        '/customers/addresses/{address}/edit',
         [CustomerAddressController::class, 'edit']
     )->name('customers.addresses.edit');
 
     // STORE new address
-    Route::post('/customers/{customer}/addresses',
+    Route::post(
+        '/customers/{customer}/addresses',
         [CustomerAddressController::class, 'store']
     )->name('customers.addresses.store');
 
     // UPDATE delivery address
-    Route::put('/customers/addresses/{address}',
+    Route::put(
+        '/customers/addresses/{address}',
         [CustomerAddressController::class, 'update']
     )->name('customers.addresses.update');
 
     // DEACTIVATE address
-    Route::delete('/customers/addresses/{address}',
+    Route::delete(
+        '/customers/addresses/{address}',
         [CustomerAddressController::class, 'deactivate']
     )->name('customers.addresses.deactivate');
 
@@ -196,15 +204,45 @@ Route::middleware('auth')->group(function () {
     | Customer Product Portfolio
     |--------------------------------------------------------------------------
     */
-    Route::post('/customers/{customer}/portfolio',
+    Route::post(
+        '/customers/{customer}/portfolio',
         [CustomerPortfolioController::class, 'store']
     )->name('customers.portfolio.store');
 
-    Route::put('/customers/portfolio/{portfolio}',
+    Route::put(
+        '/customers/portfolio/{portfolio}',
         [CustomerPortfolioController::class, 'update']
     )->name('customers.portfolio.update');
 
-    Route::delete('/customers/portfolio/{portfolio}',
+    Route::delete(
+        '/customers/portfolio/{portfolio}',
         [CustomerPortfolioController::class, 'deactivate']
     )->name('customers.portfolio.deactivate');
+
+
+
+    // orders section
+    Route::prefix('orders')->name('orders.')->group(function () {
+
+        Route::get('create', function () {
+            return view('orders.create');
+        })->name('create');
+
+        Route::get('/', [OrderController::class, 'index'])->name('index');
+        Route::post('/', [OrderController::class, 'store'])->name('store');
+
+        Route::get('{order}/edit', [OrderController::class, 'edit'])->name('edit');
+        Route::post('{order}/lines', [OrderController::class, 'addLine'])->name('lines.add');
+        Route::post('{order}/submit', [OrderController::class, 'submit'])->name('submit');
+
+        Route::get('{order}', [OrderController::class, 'show'])->name('show');
+        Route::get('{order}/print', [OrderController::class, 'print'])->name('print');
+        // Update order line (qty/notes)
+        Route::put('{order}/lines/{line}', [OrderController::class, 'updateLine'])
+            ->name('lines.update');
+
+        // Cancel (remove) order line (soft cancel)
+        Route::delete('{order}/lines/{line}', [OrderController::class, 'cancelLine'])
+            ->name('lines.cancel');
+    });
 });

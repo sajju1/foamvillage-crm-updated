@@ -7,8 +7,6 @@ use App\Models\Customer\Customer;
 use App\Models\Company\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Product\Product;
-
 
 class CustomerController extends Controller
 {
@@ -30,12 +28,10 @@ class CustomerController extends Controller
         $customersQuery = Customer::with('company')
             ->where('company_id', $companyId);
 
-        // Status filter
         if (in_array($status, ['active', 'on_hold', 'blocked'], true)) {
             $customersQuery->where('customer_status', $status);
         }
 
-        // Search
         if ($q !== '') {
             $customersQuery->where(function ($query) use ($q) {
                 $query->where('account_number', 'like', "%{$q}%")
@@ -68,7 +64,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Show the customer profile (read-first hub).
+     * Show the customer profile.
      */
     public function show(Customer $customer)
     {
@@ -85,15 +81,22 @@ class CustomerController extends Controller
             ->orderByDesc('is_active')
             ->get();
 
-        $activePortfolioMap = $portfolio
-            ->where('is_active', true)
-            ->mapWithKeys(function ($item) {
-                $key = $item->product_variation_id
-                    ? 'v_' . $item->product_variation_id
-                    : 'p_' . $item->product_id;
+        // ✅ AUTHORITATIVE ACTIVE MAP (RESTORED)
+        $activePortfolioMap = collect();
 
-                return [$key => true];
-            });
+        foreach ($customer->portfolio()->where('is_active', true)->get() as $entry) {
+            if ($entry->product_variation_id) {
+                $activePortfolioMap->put(
+                    'product_' . $entry->product_id . '_variant_' . $entry->product_variation_id,
+                    true
+                );
+            } else {
+                $activePortfolioMap->put(
+                    'product_' . $entry->product_id,
+                    true
+                );
+            }
+        }
 
 
         return view('customers.show', compact(
@@ -103,9 +106,8 @@ class CustomerController extends Controller
         ));
     }
 
-
     /**
-     * Show the form for creating a new customer.
+     * Create customer.
      */
     public function create()
     {
@@ -119,7 +121,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Store a newly created customer in storage.
+     * Store customer.
      */
     public function store(Request $request)
     {
@@ -142,9 +144,7 @@ class CustomerController extends Controller
         $customer = DB::transaction(function () use ($validated) {
             return Customer::create(array_merge(
                 $validated,
-                [
-                    'account_number' => $this->generateAccountNumber(),
-                ]
+                ['account_number' => $this->generateAccountNumber()]
             ));
         });
 
@@ -154,7 +154,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Show the form for editing the specified customer (focused edit).
+     * Edit customer.
      */
     public function edit(Customer $customer)
     {
@@ -167,7 +167,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update the specified customer in storage.
+     * Update customer.
      */
     public function update(Request $request, Customer $customer)
     {
@@ -195,7 +195,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Generate a unique customer account number (5–6 digits).
+     * Generate unique account number.
      */
     protected function generateAccountNumber(): string
     {

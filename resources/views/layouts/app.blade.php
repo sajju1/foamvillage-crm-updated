@@ -14,11 +14,17 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
 
 </head>
 
-<body class="font-inter antialiased bg-gray-100">
 
+    </div>
     <div class="min-h-screen flex">
 
         {{-- Sidebar --}}
@@ -42,7 +48,16 @@
 
         </div>
     </div>
-@stack('scripts')
+    @stack('scripts')
+    <script>
+        function openAddProductModal() {
+            document.getElementById('addProductModal').style.display = 'flex';
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').style.display = 'none';
+        }
+    </script>
 
 </body>
 

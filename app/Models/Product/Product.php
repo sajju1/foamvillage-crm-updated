@@ -42,4 +42,33 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariation::class);
     }
+    public function getDisplayNameAttribute(): string
+{
+    // If a proper name exists, use it
+    if (!empty($this->name)) {
+        return $this->name;
+    }
+
+    // Fallback for rule-based / generated products
+    $parts = [];
+
+    if (!empty($this->foam_type)) {
+        $parts[] = ucfirst($this->foam_type);
+    }
+
+    if (!empty($this->density)) {
+        $parts[] = $this->density . ' Density';
+    }
+
+    if (!empty($this->thickness)) {
+        $parts[] = $this->thickness . ' Inch';
+    }
+
+    if (!empty($parts)) {
+        return implode(' – ', $parts);
+    }
+
+    return 'Product #' . $this->id;
+}
+
 }

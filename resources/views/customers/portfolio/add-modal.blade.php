@@ -1,300 +1,198 @@
-<div
-    x-show="open"
-    x-cloak
-    x-data="{
-        reset() {
-            this.$el.querySelectorAll('input[type=checkbox]').forEach(i => i.checked = false);
-            this.$el.querySelectorAll('input[type=number]').forEach(i => i.value = '');
-            this.$el.querySelectorAll('select').forEach(s => s.value = '');
-            this.$el.querySelectorAll('[data-expand]').forEach(e => {
-                if (e.__x) e.__x.$data.expanded = false;
-            });
-        }
-    }"
-    @click.self="open = false; reset()"
-    @keydown.escape.window="open = false; reset()"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
->
-    <div class="bg-white w-full max-w-4xl rounded-lg shadow-lg overflow-hidden">
+{{-- MODAL WRAPPER (USES PARENT `open`) --}}
+<div x-show="open" x-cloak>
 
-        {{-- Header --}}
-        <div class="px-6 py-4 border-b flex justify-between items-center">
-            <h2 class="text-lg font-semibold">
-                Add Products to Customer Portfolio
-            </h2>
+    {{-- OVERLAY --}}
+    <div class="fixed inset-0 z-40 bg-black bg-opacity-50"
+         @click="open = false"></div>
 
-            <button
-                type="button"
-                @click="open = false; reset()"
-                class="text-gray-400 hover:text-gray-600"
-            >
-                ✕
-            </button>
-        </div>
+    {{-- MODAL --}}
+    <div class="fixed inset-0 z-50 flex items-center justify-center">
 
-        {{-- FORM --}}
-        <form
-            method="POST"
-            action="{{ route('customers.portfolio.store', $customer) }}"
-        >
-            @csrf
+        <div class="bg-white w-full max-w-5xl max-h-[85vh] rounded shadow-lg flex flex-col"
+             @click.stop>
 
-            {{-- Body --}}
-            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {{-- HEADER --}}
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h2 class="text-lg font-semibold">
+                    Add Products to Portfolio
+                </h2>
 
-                {{-- Product list --}}
-                <div class="space-y-4">
+                <button type="button"
+                        class="text-gray-500 hover:text-gray-700 text-xl"
+                        @click="open = false">
+                    ×
+                </button>
+            </div>
 
-                    @foreach ($products as $product)
+            {{-- BODY --}}
+            <div class="p-6 overflow-y-auto flex-1">
 
-                        {{-- ========================= --}}
-                        {{-- VARIANT-BASED PRODUCT --}}
-                        {{-- ========================= --}}
-                        @if ($product->product_type === 'variant_based')
-                            <div
-                                class="border rounded"
-                                x-data="{ expanded: false }"
-                                data-expand
-                            >
-                                {{-- Parent header --}}
-                                <button
-                                    type="button"
-                                    @click="expanded = !expanded"
-                                    class="w-full flex items-center justify-between px-4 py-2 bg-gray-100 hover:bg-gray-200"
-                                >
-                                    <div class="font-medium text-left">
+                <form method="POST" action="{{ route('customers.portfolio.store', $customer) }}">
+                    @csrf
+
+                    <div class="space-y-6">
+
+                        @foreach ($products as $product)
+                            @php
+                                $type = $product->product_type;
+                                $isFormula = in_array($type, ['rule_based', 'formula_based']);
+                            @endphp
+
+                            <div class="border rounded-md">
+
+                                {{-- PRODUCT HEADER --}}
+                                <div class="px-4 py-3 bg-gray-100">
+                                    <div class="font-semibold">
                                         {{ $product->product_name }}
-                                        <span class="text-xs text-gray-500 ml-2">
-                                            (variant-based)
-                                        </span>
                                     </div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ str_replace('_', ' ', $type) }}
+                                    </div>
+                                </div>
 
-                                    <span
-                                        class="text-gray-500 text-sm"
-                                        x-text="expanded ? '−' : '+'"
-                                    ></span>
-                                </button>
+                                {{-- SIMPLE & FORMULA --}}
+                                @if ($type !== 'variant_based')
+                                    @php
+                                        $key = 'p' . $product->id . '_v0';
+                                        $mapKey = 'product_' . $product->id;
+                                        $alreadyAdded = $activePortfolioMap->has($mapKey);
+                                    @endphp
 
-                                {{-- Variants --}}
-                                <div
-                                    x-show="expanded"
-                                    x-collapse
-                                    class="p-4 space-y-2"
-                                >
-                                    @foreach ($product->variations as $variation)
+                                    <div x-data="{ selected: false }"
+                                         class="px-4 py-3 flex items-center justify-between {{ $alreadyAdded ? 'opacity-50' : '' }}">
 
-                                        @php
-                                            $variantKey = 'v_' . $variation->id;
-                                            $alreadyAdded = isset($activePortfolioMap[$variantKey]);
-                                        @endphp
+                                        <label class="flex items-center gap-2 text-sm">
+                                            <input type="checkbox"
+                                                   x-model="selected"
+                                                   @disabled($alreadyAdded)>
+                                            Add product
+                                        </label>
 
-                                        <div
-                                            class="flex items-center gap-3"
-                                            x-data="{ selected: false }"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                {{ $alreadyAdded ? 'disabled' : '' }}
-                                                x-model="selected"
-                                                x-bind:name="selected ? 'items[{{ $variantKey }}][product_variation_id]' : null"
-                                                value="{{ $variation->id }}"
-                                            >
+                                        {{-- HIDDEN FIELDS --}}
+                                        <input type="hidden"
+                                               name="items[{{ $key }}][product_id]"
+                                               value="{{ $product->id }}"
+                                               :disabled="!selected || {{ $alreadyAdded ? 'true' : 'false' }}">
 
-                                            <span class="text-sm {{ $alreadyAdded ? 'text-gray-400' : '' }}">
-                                                {{ $variation->length }} ×
-                                                {{ $variation->width }} ×
-                                                {{ $variation->thickness }}
+                                        <input type="hidden"
+                                               name="items[{{ $key }}][product_variation_id]"
+                                               value=""
+                                               :disabled="!selected || {{ $alreadyAdded ? 'true' : 'false' }}">
+
+                                        <input type="hidden"
+                                               name="items[{{ $key }}][pricing_type]"
+                                               value="{{ $isFormula ? 'formula' : 'fixed' }}"
+                                               :disabled="!selected || {{ $alreadyAdded ? 'true' : 'false' }}">
+
+                                        {{-- RIGHT SIDE --}}
+                                        @if ($alreadyAdded)
+                                            <span class="text-xs text-gray-500 italic">
+                                                Already in portfolio
                                             </span>
-
-                                            @if ($alreadyAdded)
-                                                <span class="ml-auto text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                                                    Already in portfolio
-                                                </span>
-                                            @else
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    x-bind:name="selected ? 'items[{{ $variantKey }}][agreed_price]' : null"
-                                                    placeholder="Agreed price"
-                                                    class="ml-auto w-32 border rounded px-2 py-1 text-sm"
-                                                    x-bind:disabled="!selected"
-                                                    x-bind:required="selected"
-                                                    x-bind:class="!selected ? 'opacity-50' : ''"
-                                                >
-                                            @endif
-
-                                            <input type="hidden" name="items[{{ $variantKey }}][product_id]" value="{{ $product->id }}">
-                                            <input type="hidden" name="items[{{ $variantKey }}][pricing_type]" value="fixed">
-                                        </div>
-
-                                    @endforeach
-                                </div>
-                            </div>
-
-                        {{-- ========================= --}}
-                        {{-- FORMULA-BASED PRODUCT --}}
-                        {{-- ========================= --}}
-                        @elseif ($product->product_type === 'formula_based')
-                            @php
-                                $productKey = 'f_' . $product->id;
-                                $alreadyAdded = isset($activePortfolioMap[$productKey]);
-                            @endphp
-
-                            <div
-                                class="border rounded p-4 space-y-3"
-                                x-data="{ selected: false }"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        {{ $alreadyAdded ? 'disabled' : '' }}
-                                        x-model="selected"
-                                    >
-
-                                    <span class="text-sm font-medium {{ $alreadyAdded ? 'text-gray-400' : '' }}">
-                                        {{ $product->product_name }}
-                                        <span class="text-xs text-gray-500 ml-1">(formula-based)</span>
-                                    </span>
-
-                                    @if ($alreadyAdded)
-                                        <span class="ml-auto text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                                            Already in portfolio
-                                        </span>
-                                    @endif
-                                </div>
-
-                                @if (!$alreadyAdded)
-                                    <div x-show="selected" x-collapse class="ml-6 space-y-2">
-
-                                        <input type="hidden" name="items[{{ $productKey }}][product_id]" value="{{ $product->id }}">
-                                        <input type="hidden" name="items[{{ $productKey }}][pricing_type]" value="formula">
-
-                                        <div>
-                                            <label class="block text-xs text-gray-500 mb-1">
-                                                Pricing mode
-                                            </label>
-                                            <select
-                                                name="items[{{ $productKey }}][formula_pricing_mode]"
-                                                class="border rounded px-2 py-1 text-sm w-full"
-                                                x-bind:required="selected"
-                                            >
-                                                <option value="standard">Use standard formula</option>
-                                                <option value="rate_override">Override rate</option>
-                                                <option value="percentage_modifier">Apply percentage modifier</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                name="items[{{ $productKey }}][rate_override]"
-                                                placeholder="Rate override"
-                                                class="border rounded px-2 py-1 text-sm"
-                                            >
-
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                name="items[{{ $productKey }}][percentage_modifier]"
-                                                placeholder="Percentage modifier (e.g. -10)"
-                                                class="border rounded px-2 py-1 text-sm"
-                                            >
-
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                name="items[{{ $productKey }}][minimum_charge]"
-                                                placeholder="Minimum charge"
-                                                class="border rounded px-2 py-1 text-sm"
-                                            >
-
-                                            <select
-                                                name="items[{{ $productKey }}][rounding_rule]"
-                                                class="border rounded px-2 py-1 text-sm"
-                                            >
-                                                <option value="">No rounding</option>
-                                                <option value="none">None</option>
-                                                <option value="nearest_0.5">Nearest 0.5</option>
-                                                <option value="nearest_1">Nearest 1</option>
-                                            </select>
-                                        </div>
+                                        @elseif ($isFormula)
+                                            <span class="text-sm italic text-gray-500">
+                                                Formula pricing
+                                            </span>
+                                        @else
+                                            <div class="flex items-center gap-2">
+                                                <label class="text-sm">Price</label>
+                                                <input type="number"
+                                                       step="0.01"
+                                                       min="0"
+                                                       name="items[{{ $key }}][agreed_price]"
+                                                       class="border rounded px-2 py-1 w-28"
+                                                       :disabled="!selected"
+                                                       :required="selected">
+                                            </div>
+                                        @endif
                                     </div>
                                 @endif
-                            </div>
 
-                        {{-- ========================= --}}
-                        {{-- SIMPLE PRODUCT --}}
-                        {{-- ========================= --}}
-                        @else
-                            @php
-                                $productKey = 'p_' . $product->id;
-                                $alreadyAdded = isset($activePortfolioMap[$productKey]);
-                            @endphp
+                                {{-- VARIANTS --}}
+                                @if ($type === 'variant_based')
+                                    <div class="divide-y">
+                                        @foreach ($product->variations as $variation)
+                                            @php
+                                                $vKey = 'p' . $product->id . '_v' . $variation->id;
+                                                $variantMapKey = 'product_' . $product->id . '_variant_' . $variation->id;
+                                                $alreadyAdded = $activePortfolioMap->has($variantMapKey);
+                                            @endphp
 
-                            <div
-                                class="border rounded p-4 flex items-center gap-3"
-                                x-data="{ selected: false }"
-                            >
-                                <input
-                                    type="checkbox"
-                                    {{ $alreadyAdded ? 'disabled' : '' }}
-                                    x-model="selected"
-                                    x-bind:name="selected ? 'items[{{ $productKey }}][product_id]' : null"
-                                    value="{{ $product->id }}"
-                                >
+                                            <div x-data="{ selected: false }"
+                                                 class="px-4 py-3 flex items-center justify-between {{ $alreadyAdded ? 'opacity-50' : '' }}">
 
-                                <span class="text-sm font-medium {{ $alreadyAdded ? 'text-gray-400' : '' }}">
-                                    {{ $product->product_name }}
-                                </span>
+                                                <div class="text-sm font-medium">
+                                                    {{ $variation->length }} ×
+                                                    {{ $variation->width }} ×
+                                                    {{ $variation->thickness }}
+                                                </div>
 
-                                @if ($alreadyAdded)
-                                    <span class="ml-auto text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                                        Already in portfolio
-                                    </span>
-                                @else
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        x-bind:name="selected ? 'items[{{ $productKey }}][agreed_price]' : null"
-                                        placeholder="Agreed price"
-                                        class="ml-auto w-32 border rounded px-2 py-1 text-sm"
-                                        x-bind:disabled="!selected"
-                                        x-bind:required="selected"
-                                        x-bind:class="!selected ? 'opacity-50' : ''"
-                                    >
+                                                <div class="flex items-center gap-3">
+                                                    <label class="flex items-center gap-2 text-sm">
+                                                        <input type="checkbox"
+                                                               x-model="selected"
+                                                               @disabled($alreadyAdded)>
+                                                        Add
+                                                    </label>
+
+                                                    {{-- HIDDEN FIELDS --}}
+                                                    <input type="hidden"
+                                                           name="items[{{ $vKey }}][product_id]"
+                                                           value="{{ $product->id }}"
+                                                           :disabled="!selected || {{ $alreadyAdded ? 'true' : 'false' }}">
+
+                                                    <input type="hidden"
+                                                           name="items[{{ $vKey }}][product_variation_id]"
+                                                           value="{{ $variation->id }}"
+                                                           :disabled="!selected || {{ $alreadyAdded ? 'true' : 'false' }}">
+
+                                                    <input type="hidden"
+                                                           name="items[{{ $vKey }}][pricing_type]"
+                                                           value="fixed"
+                                                           :disabled="!selected || {{ $alreadyAdded ? 'true' : 'false' }}">
+
+                                                    @if ($alreadyAdded)
+                                                        <span class="text-xs text-gray-500 italic">
+                                                            Already in portfolio
+                                                        </span>
+                                                    @else
+                                                        <div class="flex items-center gap-2">
+                                                            <label class="text-sm">Price</label>
+                                                            <input type="number"
+                                                                   step="0.01"
+                                                                   min="0"
+                                                                   name="items[{{ $vKey }}][agreed_price]"
+                                                                   class="border rounded px-2 py-1 w-28"
+                                                                   :disabled="!selected"
+                                                                   :required="selected">
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 @endif
 
-                                <input type="hidden" name="items[{{ $productKey }}][pricing_type]" value="fixed">
                             </div>
-                        @endif
+                        @endforeach
+                    </div>
 
-                    @endforeach
+                    {{-- FOOTER --}}
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button"
+                                class="px-4 py-2 border rounded"
+                                @click="open = false">
+                            Cancel
+                        </button>
 
-                </div>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Add Selected Products
+                        </button>
+                    </div>
+                </form>
+
             </div>
-
-            {{-- Footer --}}
-            <div class="px-6 py-4 border-t flex justify-end gap-3">
-                <button
-                    type="button"
-                    @click="open = false; reset()"
-                    class="px-4 py-2 text-sm border rounded"
-                >
-                    Cancel
-                </button>
-
-                <button
-                    type="submit"
-                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded"
-                >
-                    Add to Portfolio
-                </button>
-            </div>
-
-        </form>
-
+        </div>
     </div>
 </div>

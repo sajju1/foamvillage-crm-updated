@@ -2,52 +2,38 @@
 
 namespace App\Models\Customer;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Models\Product\Product;
 use App\Models\Product\ProductVariation;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CustomerProductPortfolio extends Model
 {
-    use HasFactory;
-
     protected $table = 'customer_product_portfolio';
 
     protected $fillable = [
         'customer_id',
         'product_id',
         'product_variation_id',
+        'sellable_label',
+        'pricing_type',
         'agreed_price',
+        'formula_pricing_mode',
+        'rate_override',
+        'percentage_modifier',
+        'minimum_charge',
+        'rounding_rule',
         'effective_from',
         'effective_to',
         'is_active',
     ];
 
-    protected $casts = [
-        'agreed_price'   => 'decimal:4',
-        'effective_from' => 'date',
-        'effective_to'   => 'date',
-        'is_active'      => 'boolean',
-    ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
     public function product()
     {
-        return $this->belongsTo(\App\Models\Product\Product::class, 'product_id');
+        return $this->belongsTo(Product::class);
     }
 
     public function variation()
     {
-        return $this->belongsTo(\App\Models\Product\ProductVariation::class, 'product_variation_id');
+        return $this->belongsTo(ProductVariation::class, 'product_variation_id');
     }
 }
