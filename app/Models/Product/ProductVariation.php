@@ -35,4 +35,27 @@ class ProductVariation extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+
+    public function getDisplayNameAttribute(): string
+    {
+        $format = function ($value): string {
+            // Convert things like "90.00" -> "90", "90.50" -> "90.5"
+            $value = (string) $value;
+            $value = rtrim($value, '0');
+            $value = rtrim($value, '.');
+            return $value;
+        };
+
+        $parts = [];
+
+        if ($this->length !== null && $this->width !== null) {
+            $parts[] = $format($this->length) . ' x ' . $format($this->width);
+        }
+
+        if ($this->thickness !== null) {
+            $parts[] = $format($this->thickness);
+        }
+
+        return implode(' x ', $parts);
+    }
 }

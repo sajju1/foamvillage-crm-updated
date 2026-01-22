@@ -40,4 +40,18 @@ class CustomerProductPortfolio extends Model
     {
         return $this->belongsTo(ProductVariation::class, 'variation_id');
     }
+
+    public function getStandardPriceDisplayAttribute(): string
+    {
+        return $this->standard_price !== null
+            ? number_format($this->standard_price, 2)
+            : '—';
+    }
+
+    public function getCustomerPriceDisplayAttribute(): string
+    {
+        return $this->agreed_price !== null
+            ? number_format($this->agreed_price, 2)
+            : '—';
+    }
 }

@@ -86,4 +86,24 @@ class CustomerPortfolioController extends Controller
 
         return $product->product_name;
     }
+
+    public function update(Request $request, $portfolioEntry)
+    {
+        $entry = \App\Models\Customer\CustomerProductPortfolio::findOrFail($portfolioEntry);
+
+        // Safety: only fixed pricing can be edited
+        if ($entry->pricing_type !== 'fixed') {
+            return back()->with('error', 'Formula-based pricing cannot be edited.');
+        }
+
+        $validated = $request->validate([
+            'agreed_price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $entry->update([
+            'agreed_price' => $validated['agreed_price'],
+        ]);
+
+        return back()->with('success', 'Customer price updated successfully.');
+    }
 }

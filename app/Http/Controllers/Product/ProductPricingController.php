@@ -88,6 +88,10 @@ class ProductPricingController extends Controller
 
         $validated['product_id'] = $product->id;
 
+        // 🔴 ADD THIS LINE (CRITICAL FIX)
+        $validated['calculation_formula'] = $validated['calculation_formula']
+            ?? 'density * price_unit';
+
         FoamPricingRule::create($validated);
 
         return redirect()

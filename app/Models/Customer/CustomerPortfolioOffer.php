@@ -2,31 +2,38 @@
 
 namespace App\Models\Customer;
 
-use App\Models\User;
-use App\Models\Product\Product;
-use App\Models\Product\ProductVariation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class CustomerPortfolioOffer extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'customer_id',
-        'product_id',
-        'product_variation_id',
+        'customer_product_portfolio_id',
         'offer_type',
-        'offer_value',
-        'valid_from',
-        'valid_to',
+        'fixed_price',
+        'percentage',
+        'discount_amount',
+        'minimum_quantity',
+        'effective_from',
+        'effective_to',
+        'is_active',
         'created_by',
+        'notes',
     ];
 
     protected $casts = [
-        'offer_value' => 'decimal:4',
-        'valid_from'  => 'date',
-        'valid_to'    => 'date',
+        'fixed_price'      => 'decimal:2',
+        'percentage'       => 'decimal:2',
+        'discount_amount'  => 'decimal:2',
+        'minimum_quantity' => 'integer',
+        'effective_from'   => 'datetime',
+        'effective_to'     => 'datetime',
+        'is_active'        => 'boolean',
+        'created_by'       => 'integer',
     ];
 
     /*
@@ -35,22 +42,15 @@ class CustomerPortfolioOffer extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function customer()
+    public function portfolioEntry(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(
+            CustomerProductPortfolio::class,
+            'customer_product_portfolio_id'
+        );
     }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function productVariation()
-    {
-        return $this->belongsTo(ProductVariation::class);
-    }
-
-    public function createdBy()
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }

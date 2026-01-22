@@ -25,7 +25,16 @@
             </div>
 
             {{-- BODY --}}
-            <div class="p-6 overflow-y-auto flex-1">
+            <div class="p-6 overflow-y-auto flex-1"
+                 x-data="{ search: '' }">
+
+                {{-- SEARCH --}}
+                <div class="mb-4">
+                    <input type="text"
+                           x-model="search"
+                           placeholder="Search products or variants…"
+                           class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring">
+                </div>
 
                 <form method="POST" action="{{ route('customers.portfolio.store', $customer) }}">
                     @csrf
@@ -36,9 +45,19 @@
                             @php
                                 $type = $product->product_type;
                                 $isFormula = in_array($type, ['rule_based', 'formula_based']);
+
+                                $searchText = strtolower(
+                                    $product->product_name . ' ' .
+                                    str_replace('_', ' ', $type) . ' ' .
+                                    $product->variations
+                                        ->map(fn($v) => "{$v->length} {$v->width} {$v->thickness}")
+                                        ->implode(' ')
+                                );
                             @endphp
 
-                            <div class="border rounded-md">
+                            <div class="border rounded-md"
+                                 data-search="{{ $searchText }}"
+                                 x-show="search === '' || $el.dataset.search.includes(search.toLowerCase())">
 
                                 {{-- PRODUCT HEADER --}}
                                 <div class="px-4 py-3 bg-gray-100">

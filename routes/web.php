@@ -3,23 +3,45 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
+/*
+|--------------------------------------------------------------------------
+| Company
+|--------------------------------------------------------------------------
+*/
 use App\Http\Controllers\Company\CompanyController;
 use App\Http\Controllers\Company\CompanyBrandController;
 use App\Http\Controllers\Company\DocumentDefaultController;
 
+/*
+|--------------------------------------------------------------------------
+| Products
+|--------------------------------------------------------------------------
+*/
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Product\ProductVariationController;
 use App\Http\Controllers\Product\ProductPricingController;
-use App\Http\Controllers\Product\CustomerPricingController;
 use App\Http\Controllers\Product\ProductCategoryController;
 use App\Http\Controllers\Product\FoamTypeController;
 
+/*
+|--------------------------------------------------------------------------
+| Customers
+|--------------------------------------------------------------------------
+*/
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Customer\CustomerStatusController;
 use App\Http\Controllers\Customer\CustomerAddressController;
 use App\Http\Controllers\Customer\CustomerPortfolioController;
-use App\Http\Controllers\Orders\OrderController;
+use App\Http\Controllers\Customer\CustomerPortfolioOfferController;
+use App\Http\Controllers\Customer\CustomerPortfolioSheetController;
 
+
+/*
+|--------------------------------------------------------------------------
+| Orders
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Orders\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,18 +49,16 @@ use App\Http\Controllers\Orders\OrderController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => view('welcome'));
 
 /*
 |--------------------------------------------------------------------------
 | Dashboard
 |--------------------------------------------------------------------------
 */
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', fn() => view('dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
@@ -75,11 +95,15 @@ Route::middleware('auth')->prefix('companies')->group(function () {
         Route::put('/{brand}', [CompanyBrandController::class, 'update'])->name('brands.update');
     });
 
-    Route::get('{company}/document-defaults/{documentType?}', [DocumentDefaultController::class, 'edit'])
-        ->name('document-defaults.edit');
+    Route::get(
+        '{company}/document-defaults/{documentType?}',
+        [DocumentDefaultController::class, 'edit']
+    )->name('document-defaults.edit');
 
-    Route::put('{company}/document-defaults/{documentDefault}', [DocumentDefaultController::class, 'update'])
-        ->name('document-defaults.update');
+    Route::put(
+        '{company}/document-defaults/{documentDefault}',
+        [DocumentDefaultController::class, 'update']
+    )->name('document-defaults.update');
 });
 
 /*
@@ -87,162 +111,165 @@ Route::middleware('auth')->prefix('companies')->group(function () {
 | Products & Pricing (Module 03)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->prefix('products')->group(function () {
 
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::get('/product-categories', [ProductCategoryController::class, 'index'])
+        ->name('product-categories.index');
 
-    Route::get('/products/{product}/variations', [ProductVariationController::class, 'index'])
+    Route::get('/product-categories/create', [ProductCategoryController::class, 'create'])
+        ->name('product-categories.create');
+
+    Route::post('/product-categories', [ProductCategoryController::class, 'store'])
+        ->name('product-categories.store');
+
+    Route::get('/product-categories/{productCategory}/edit', [ProductCategoryController::class, 'edit'])
+        ->name('product-categories.edit');
+
+    Route::put('/product-categories/{productCategory}', [ProductCategoryController::class, 'update'])
+        ->name('product-categories.update');
+
+    Route::get('/', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/{product}', [ProductController::class, 'update'])->name('products.update');
+
+    Route::get('/{product}/variations', [ProductVariationController::class, 'index'])
         ->name('products.variations.index');
-    Route::get('/products/{product}/variations/create', [ProductVariationController::class, 'create'])
+    Route::get('/{product}/variations/create', [ProductVariationController::class, 'create'])
         ->name('products.variations.create');
-    Route::post('/products/{product}/variations', [ProductVariationController::class, 'store'])
+    Route::post('/{product}/variations', [ProductVariationController::class, 'store'])
         ->name('products.variations.store');
-    Route::get('/products/{product}/variations/{variation}/edit', [ProductVariationController::class, 'edit'])
+    Route::get('/{product}/variations/{variation}/edit', [ProductVariationController::class, 'edit'])
         ->name('products.variations.edit');
-    Route::put('/products/{product}/variations/{variation}', [ProductVariationController::class, 'update'])
+    Route::put('/{product}/variations/{variation}', [ProductVariationController::class, 'update'])
         ->name('products.variations.update');
 
-    Route::get('/pricing/options', [ProductPricingController::class, 'options'])
-        ->name('pricing.options');
-    Route::post('/pricing/options', [ProductPricingController::class, 'storeOption'])
-        ->name('pricing.options.store');
+    Route::get(
+        '/products/{product}/pricing/foam',
+        [ProductPricingController::class, 'foamRules']
+    )->name('pricing.foam.index');
 
-    Route::get('/products/{product}/pricing/foam', [ProductPricingController::class, 'foamRules'])
-        ->name('pricing.foam.index');
-    Route::get('/products/{product}/pricing/foam/create', [ProductPricingController::class, 'createFoamRule'])
-        ->name('pricing.foam.create');
-    Route::post('/products/{product}/pricing/foam', [ProductPricingController::class, 'storeFoamRule'])
-        ->name('pricing.foam.store');
-    Route::get('/products/{product}/pricing/foam/{rule}/edit', [ProductPricingController::class, 'editFoamRule'])
-        ->name('pricing.foam.edit');
-    Route::put('/products/{product}/pricing/foam/{rule}', [ProductPricingController::class, 'updateFoamRule'])
-        ->name('pricing.foam.update');
+    Route::get(
+        '/products/{product}/pricing/foam/create',
+        [ProductPricingController::class, 'createFoamRule']
+    )->name('pricing.foam.create');
+
+    Route::post(
+        '/products/{product}/pricing/foam',
+        [ProductPricingController::class, 'storeFoamRule']
+    )->name('pricing.foam.store');
+
+    Route::get(
+        '/products/{product}/pricing/foam/{rule}/edit',
+        [ProductPricingController::class, 'editFoamRule']
+    )->name('pricing.foam.edit');
+
+    Route::put(
+        '/products/{product}/pricing/foam/{rule}',
+        [ProductPricingController::class, 'updateFoamRule']
+    )->name('pricing.foam.update');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/pricing/options', [ProductPricingController::class, 'options'])->name('pricing.options');
+    Route::post('/pricing/options', [ProductPricingController::class, 'storeOption'])->name('pricing.options.store');
 
     Route::get('/foam-types', [FoamTypeController::class, 'index'])->name('foam-types.index');
     Route::get('/foam-types/create', [FoamTypeController::class, 'create'])->name('foam-types.create');
     Route::post('/foam-types', [FoamTypeController::class, 'store'])->name('foam-types.store');
     Route::get('/foam-types/{foamType}/edit', [FoamTypeController::class, 'edit'])->name('foam-types.edit');
     Route::put('/foam-types/{foamType}', [FoamTypeController::class, 'update'])->name('foam-types.update');
-
-    Route::get('/product-categories', [ProductCategoryController::class, 'index'])
-        ->name('product-categories.index');
-    Route::get('/product-categories/create', [ProductCategoryController::class, 'create'])
-        ->name('product-categories.create');
-    Route::post('/product-categories', [ProductCategoryController::class, 'store'])
-        ->name('product-categories.store');
-    Route::get('/product-categories/{productCategory}/edit', [ProductCategoryController::class, 'edit'])
-        ->name('product-categories.edit');
-    Route::put('/product-categories/{productCategory}', [ProductCategoryController::class, 'update'])
-        ->name('product-categories.update');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Customers (Module 04)
+| Customers (Module 04) — CLEAN & SAFE
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->prefix('customers')->group(function () {
 
-    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
-    Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
-    Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
+    Route::get('/', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/create', [CustomerController::class, 'create'])->name('customers.create');
+    Route::post('/', [CustomerController::class, 'store'])->name('customers.store');
 
-    Route::get('/customers/{customer}', [CustomerController::class, 'show'])
-        ->name('customers.show');
+    Route::get('/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+    Route::get('/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
+    Route::put('/{customer}', [CustomerController::class, 'update'])->name('customers.update');
 
-    Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])
-        ->name('customers.edit');
-
-    Route::put('/customers/{customer}', [CustomerController::class, 'update'])
-        ->name('customers.update');
-
-    Route::put('/customers/{customer}/status', [CustomerStatusController::class, 'update'])
+    Route::put('/{customer}/status', [CustomerStatusController::class, 'update'])
         ->name('customers.status.update');
 
     /*
-    |--------------------------------------------------------------------------
-    | Customer Addresses (FINAL & CORRECT)
-    |--------------------------------------------------------------------------
+    | Addresses
     */
-
-    // SHOW address creation form (registered / billing / delivery)
-    Route::get(
-        '/customers/{customer}/addresses/create',
-        [CustomerAddressController::class, 'create']
-    )->name('customers.addresses.create');
-
-    // SHOW delivery address edit form
-    Route::get(
-        '/customers/addresses/{address}/edit',
-        [CustomerAddressController::class, 'edit']
-    )->name('customers.addresses.edit');
-
-    // STORE new address
-    Route::post(
-        '/customers/{customer}/addresses',
-        [CustomerAddressController::class, 'store']
-    )->name('customers.addresses.store');
-
-    // UPDATE delivery address
-    Route::put(
-        '/customers/addresses/{address}',
-        [CustomerAddressController::class, 'update']
-    )->name('customers.addresses.update');
-
-    // DEACTIVATE address
-    Route::delete(
-        '/customers/addresses/{address}',
-        [CustomerAddressController::class, 'deactivate']
-    )->name('customers.addresses.deactivate');
+    Route::get('/{customer}/addresses/create', [CustomerAddressController::class, 'create'])
+        ->name('customers.addresses.create');
+    Route::post('/{customer}/addresses', [CustomerAddressController::class, 'store'])
+        ->name('customers.addresses.store');
+    Route::get('/addresses/{address}/edit', [CustomerAddressController::class, 'edit'])
+        ->name('customers.addresses.edit');
+    Route::put('/addresses/{address}', [CustomerAddressController::class, 'update'])
+        ->name('customers.addresses.update');
+    Route::delete('/addresses/{address}', [CustomerAddressController::class, 'deactivate'])
+        ->name('customers.addresses.deactivate');
 
     /*
-    |--------------------------------------------------------------------------
-    | Customer Product Portfolio
-    |--------------------------------------------------------------------------
+    | Portfolio
     */
-    Route::post(
-        '/customers/{customer}/portfolio',
-        [CustomerPortfolioController::class, 'store']
-    )->name('customers.portfolio.store');
+    Route::post('/{customer}/portfolio', [CustomerPortfolioController::class, 'store'])
+        ->name('customers.portfolio.store');
+    Route::put('/portfolio/{portfolio}', [CustomerPortfolioController::class, 'update'])
+        ->name('customers.portfolio.update');
+    Route::delete('/portfolio/{portfolio}', [CustomerPortfolioController::class, 'deactivate'])
+        ->name('customers.portfolio.deactivate');
 
-    Route::put(
-        '/customers/portfolio/{portfolio}',
-        [CustomerPortfolioController::class, 'update']
-    )->name('customers.portfolio.update');
+    /*
+    | Offers
+    */
+    Route::post('/portfolio/{portfolioEntry}/offers', [CustomerPortfolioOfferController::class, 'store'])
+        ->name('customers.portfolio.offers.store');
+    Route::delete('/portfolio/offers/{offer}', [CustomerPortfolioOfferController::class, 'deactivate'])
+        ->name('customers.portfolio.offers.deactivate');
 
-    Route::delete(
-        '/customers/portfolio/{portfolio}',
-        [CustomerPortfolioController::class, 'deactivate']
-    )->name('customers.portfolio.deactivate');
+    /*
+    print
+    */
 
 
+    Route::get(
+        '{customer}/portfolio/print',
+        [CustomerPortfolioSheetController::class, 'print']
+    )->name('customers.portfolio.print');
+    Route::get(
+        '{customer}/portfolio/pdf',
+        [CustomerPortfolioSheetController::class, 'pdf']
+    )->name('customers.portfolio.pdf');
 
-    // orders section
-    Route::prefix('orders')->name('orders.')->group(function () {
+    Route::get(
+        '{customer}/portfolio/email',
+        [CustomerPortfolioSheetController::class, 'email']
+    )->name('customers.portfolio.email');
+});
 
-        Route::get('create', function () {
-            return view('orders.create');
-        })->name('create');
+/*
+|--------------------------------------------------------------------------
+| Orders (Module 05)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->prefix('orders')->name('orders.')->group(function () {
 
-        Route::get('/', [OrderController::class, 'index'])->name('index');
-        Route::post('/', [OrderController::class, 'store'])->name('store');
+    Route::get('/', [OrderController::class, 'index'])->name('index');
+    Route::get('/create', fn() => view('orders.create'))->name('create');
+    Route::post('/', [OrderController::class, 'store'])->name('store');
 
-        Route::get('{order}/edit', [OrderController::class, 'edit'])->name('edit');
-        Route::post('{order}/lines', [OrderController::class, 'addLine'])->name('lines.add');
-        Route::post('{order}/submit', [OrderController::class, 'submit'])->name('submit');
+    Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+    Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit');
+    Route::get('/{order}/print', [OrderController::class, 'print'])->name('print');
 
-        Route::get('{order}', [OrderController::class, 'show'])->name('show');
-        Route::get('{order}/print', [OrderController::class, 'print'])->name('print');
-        // Update order line (qty/notes)
-        Route::put('{order}/lines/{line}', [OrderController::class, 'updateLine'])
-            ->name('lines.update');
+    Route::post('/{order}/lines', [OrderController::class, 'addLine'])->name('lines.add');
+    Route::put('/{order}/lines/{line}', [OrderController::class, 'updateLine'])->name('lines.update');
+    Route::delete('/{order}/lines/{line}', [OrderController::class, 'cancelLine'])->name('lines.cancel');
 
-        // Cancel (remove) order line (soft cancel)
-        Route::delete('{order}/lines/{line}', [OrderController::class, 'cancelLine'])
-            ->name('lines.cancel');
-    });
+    Route::post('/{order}/submit', [OrderController::class, 'submit'])->name('submit');
 });

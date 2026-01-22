@@ -5,6 +5,7 @@ namespace App\Models\Customer;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Product\Product;
 use App\Models\Product\ProductVariation;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CustomerProductPortfolio extends Model
 {
@@ -32,8 +33,22 @@ class CustomerProductPortfolio extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function variation()
+    
+    public function offers()
     {
-        return $this->belongsTo(ProductVariation::class, 'product_variation_id');
+        return $this->hasMany(CustomerPortfolioOffer::class);
     }
+    public function portfolio()
+    {
+        return $this->hasMany(CustomerProductPortfolio::class);
+    }
+    public function variation(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariation::class, 'variation_id');
+    }
+    public function productVariation(): BelongsTo
+{
+    return $this->belongsTo(ProductVariation::class, 'product_variation_id');
+}
+
 }

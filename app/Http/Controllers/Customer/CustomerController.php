@@ -97,12 +97,18 @@ class CustomerController extends Controller
                 );
             }
         }
+        $customer->load([
+            'portfolio.product',
+            'portfolio.variation',
+            'portfolio.offers',
+        ]);
 
 
         return view('customers.show', compact(
             'customer',
             'portfolio',
             'activePortfolioMap'
+
         ));
     }
 
