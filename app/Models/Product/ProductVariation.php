@@ -58,4 +58,23 @@ class ProductVariation extends Model
 
         return implode(' x ', $parts);
     }
+
+    public function getFormattedSizeAttribute(): string
+    {
+        $parts = [];
+
+        if ($this->length) {
+            $parts[] = rtrim(rtrim(number_format($this->length, 2), '0'), '.');
+        }
+
+        if ($this->width) {
+            $parts[] = rtrim(rtrim(number_format($this->width, 2), '0'), '.');
+        }
+
+        if ($this->thickness) {
+            $parts[] = rtrim(rtrim(number_format($this->thickness, 2), '0'), '.');
+        }
+
+        return implode(' x ', $parts);
+    }
 }

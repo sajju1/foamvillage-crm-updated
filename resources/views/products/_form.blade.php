@@ -71,6 +71,29 @@
         </p>
     </div>
 
+    {{-- ✅ VAT RULE (ADDED) --}}
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+            VAT Rule
+        </label>
+
+        <select name="vat_rule_id" class="w-full border-gray-300 rounded">
+            <option value="">— Use default VAT —</option>
+
+            @foreach ($vatRules as $vat)
+                <option value="{{ $vat->id }}"
+                    @selected(old('vat_rule_id', $product->vat_rule_id) == $vat->id)>
+                    {{ $vat->name }} ({{ number_format($vat->rate, 2) }}%)
+                    @if($vat->is_default) — Default @endif
+                </option>
+            @endforeach
+        </select>
+
+        <p class="text-xs text-gray-500 mt-1">
+            If not selected, the system default VAT will be used.
+        </p>
+    </div>
+
     {{-- SIMPLE PRICING (ONLY FOR SIMPLE PRODUCTS) --}}
     <div id="simple-pricing-fields" class="md:col-span-2 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

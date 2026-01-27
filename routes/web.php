@@ -34,14 +34,42 @@ use App\Http\Controllers\Customer\CustomerAddressController;
 use App\Http\Controllers\Customer\CustomerPortfolioController;
 use App\Http\Controllers\Customer\CustomerPortfolioOfferController;
 use App\Http\Controllers\Customer\CustomerPortfolioSheetController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\OrderSubmissionController;
+
+/*
+|--------------------------------------------------------------------------
+| Delivery Notes (Staff)
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Staff\DeliveryNoteController;
+use App\Http\Controllers\Staff\Invoice\ConvertDeliveryNoteToInvoiceController;
+use App\Http\Controllers\Staff\Vat\VatRuleController;
+use App\Http\Controllers\Staff\Invoice\InvoiceController;
+use App\Http\Controllers\Staff\Invoice\AccountCustomerPortfolioSearchController;
+use App\Http\Controllers\Staff\Invoice\ProductVariationSearchController;
+
 
 
 /*
+
+
 |--------------------------------------------------------------------------
 | Orders
 |--------------------------------------------------------------------------
 */
-use App\Http\Controllers\Orders\OrderController;
+// staff
+use App\Http\Controllers\Staff\OrderController as StaffOrderController;
+use App\Http\Controllers\Staff\OrderAcknowledgementController;
+use App\Http\Controllers\Staff\OrderLineController;
+
+use App\Http\Controllers\Staff\Invoice\InvoicePdfController;
+use App\Http\Controllers\Staff\Invoice\InvoiceEmailController;
+use App\Http\Controllers\Staff\Invoice\UpdateInvoiceLineNoteController;
+use App\Http\Controllers\Staff\Invoice\AddInvoiceLineController;
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -184,7 +212,7 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Customers (Module 04) — CLEAN & SAFE
+| Customers (Module 04)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->prefix('customers')->group(function () {
@@ -233,14 +261,13 @@ Route::middleware('auth')->prefix('customers')->group(function () {
         ->name('customers.portfolio.offers.deactivate');
 
     /*
-    print
+    | Portfolio Print
     */
-
-
     Route::get(
         '{customer}/portfolio/print',
         [CustomerPortfolioSheetController::class, 'print']
     )->name('customers.portfolio.print');
+
     Route::get(
         '{customer}/portfolio/pdf',
         [CustomerPortfolioSheetController::class, 'pdf']
@@ -250,26 +277,198 @@ Route::middleware('auth')->prefix('customers')->group(function () {
         '{customer}/portfolio/email',
         [CustomerPortfolioSheetController::class, 'email']
     )->name('customers.portfolio.email');
+
+    /*
+| Orders (Customer-scoped)
+*/
+    Route::prefix('{customer}')
+        ->scopeBindings()
+        ->group(function () {
+
+            Route::get('orders', [CustomerOrderController::class, 'index'])
+                ->name('orders.index');
+
+            Route::get('orders/create', [CustomerOrderController::class, 'create'])
+                ->name('orders.create');
+
+            Route::get('orders/{order}', [CustomerOrderController::class, 'show'])
+                ->name('orders.show');
+
+            Route::get('orders/{order}/review', [CustomerOrderController::class, 'review'])
+                ->name('orders.review');
+
+            Route::post('orders/{order}/submit', [OrderSubmissionController::class, 'submit'])
+                ->name('orders.submit');
+
+            Route::get('orders/{order}/add-products', [CustomerOrderController::class, 'addProducts'])
+                ->name('orders.add-products');
+
+            Route::post('orders/{order}/add-products', [CustomerOrderController::class, 'storeAddedProducts'])
+                ->name('orders.add-products.store');
+
+            Route::post('orders/{order}/lines', [CustomerOrderController::class, 'upsertLine'])
+                ->name('customers.orders.lines.upsert');
+
+            Route::get('orders/{order}/print', [CustomerOrderController::class, 'print'])
+                ->name('orders.print');
+        });
 });
 
 /*
 |--------------------------------------------------------------------------
-| Orders (Module 05)
+| Orders (Module 05 - Staff)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->prefix('orders')->name('orders.')->group(function () {
+Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () {
 
-    Route::get('/', [OrderController::class, 'index'])->name('index');
-    Route::get('/create', fn() => view('orders.create'))->name('create');
-    Route::post('/', [OrderController::class, 'store'])->name('store');
+    // Orders index
+    Route::get('/orders', [StaffOrderController::class, 'index'])
+        ->name('orders.index');
 
-    Route::get('/{order}', [OrderController::class, 'show'])->name('show');
-    Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit');
-    Route::get('/{order}/print', [OrderController::class, 'print'])->name('print');
+    Route::get('/orders/create', [StaffOrderController::class, 'create'])
+        ->name('orders.create');
 
-    Route::post('/{order}/lines', [OrderController::class, 'addLine'])->name('lines.add');
-    Route::put('/{order}/lines/{line}', [OrderController::class, 'updateLine'])->name('lines.update');
-    Route::delete('/{order}/lines/{line}', [OrderController::class, 'cancelLine'])->name('lines.cancel');
+    Route::post('/orders', [StaffOrderController::class, 'store'])
+        ->name('orders.store');
 
-    Route::post('/{order}/submit', [OrderController::class, 'submit'])->name('submit');
+    Route::get('/orders/{order}', [StaffOrderController::class, 'show'])
+        ->name('orders.show');
+
+    Route::post('/orders/{order}/acknowledge', [OrderAcknowledgementController::class, 'acknowledge'])
+        ->name('orders.acknowledge');
+
+    Route::post('/orders/{order}/amend', [StaffOrderController::class, 'amend'])
+        ->name('orders.amend');
+
+    /*
+|--------------------------------------------------------------------------
+| Delivery / Collection Notes (Module 06)
+|--------------------------------------------------------------------------
+*/
+
+    // Index
+    Route::get('/delivery-notes', [DeliveryNoteController::class, 'index'])
+        ->name('delivery-notes.index');
+
+    // Create from order
+    Route::get('/orders/{order}/delivery-notes/create', [DeliveryNoteController::class, 'create'])
+        ->name('delivery-notes.create');
+
+    Route::post('/orders/{order}/delivery-notes', [DeliveryNoteController::class, 'store'])
+        ->name('delivery-notes.store');
+
+    // Show / outputs
+    Route::get('/delivery-notes/{deliveryNote}', [DeliveryNoteController::class, 'show'])
+        ->name('delivery-notes.show');
+
+    Route::get('/delivery-notes/{deliveryNote}/print', [DeliveryNoteController::class, 'print'])
+        ->name('delivery-notes.print');
+
+    Route::get('/delivery-notes/{deliveryNote}/pdf', [DeliveryNoteController::class, 'pdf'])
+        ->name('delivery-notes.pdf');
+
+    Route::post('/delivery-notes/{deliveryNote}/email', [DeliveryNoteController::class, 'email'])
+        ->name('delivery-notes.email');
+
+
+    Route::get(
+        '/delivery-notes',
+        [DeliveryNoteController::class, 'index']
+    )->name('delivery-notes.index');
+
+    Route::post(
+        '/delivery-notes/{deliveryNote}/convert-to-invoice',
+        ConvertDeliveryNoteToInvoiceController::class
+    )->name('delivery-notes.convert-to-invoice');
+
+    Route::get(
+        '/invoices/{invoice}',
+        [InvoiceController::class, 'show']
+    )->name('invoices.show');
+
+
+
+    Route::get('/invoices/{invoice}/print', [InvoicePdfController::class, 'show'])
+        ->name('invoices.print');
+
+    Route::get('/invoices/{invoice}/pdf', [InvoicePdfController::class, 'download'])
+        ->name('invoices.pdf');
+
+    Route::post('/invoices/{invoice}/email', InvoiceEmailController::class)
+        ->name('invoices.email');
+
+    Route::get('/invoices', [InvoiceController::class, 'index'])
+        ->name('invoices.index');
+
+
+    Route::patch(
+        '/invoices/lines/{line}/note',
+        [UpdateInvoiceLineNoteController::class, 'update']
+    )->name('invoices.lines.note');
+
+    Route::post(
+        '/invoices/{invoice}/lines',
+        [AddInvoiceLineController::class, 'store']
+    )->name('invoices.lines.store');
+
+    Route::get(
+        '/invoices/search/portfolio/{customer}',
+        AccountCustomerPortfolioSearchController::class
+    )->name('invoices.search.portfolio');
+
+    Route::get(
+        '/invoices/search/products',
+        ProductVariationSearchController::class
+    )->name('invoices.search.products');
+
+    Route::get(
+        '/invoices/{invoice}/edit',
+        [InvoiceController::class, 'edit']
+    )->name('invoices.edit');
+
+    Route::delete(
+        '/invoices/lines/{line}',
+        [AddInvoiceLineController::class, 'destroy']
+    )->name('invoices.lines.destroy');
+    Route::post(
+        '/invoices/{invoice}/payments',
+        [\App\Http\Controllers\Staff\Invoice\InvoicePaymentController::class, 'store']
+    )->name('invoices.payments.store');
+    Route::patch(
+        '/invoices/{invoice}/due-date',
+        [InvoiceController::class, 'updateDueDate']
+    )->name('invoices.update-due-date');
+
+    Route::post(
+        '/invoices/{invoice}/send-reminder',
+        [InvoiceController::class, 'sendReminder']
+    )->name('invoices.send-reminder');
+    Route::post(
+        '/invoices/send-overdue-reminders',
+        [InvoiceController::class, 'sendBulkOverdueReminders']
+    )->name('invoices.send-overdue-reminders');
+
+
+
+    Route::prefix('vat-rules')->name('vat-rules.')->group(function () {
+        Route::get('/', [VatRuleController::class, 'index'])->name('index');
+        Route::post('/', [VatRuleController::class, 'store'])->name('store');
+        Route::patch('{vatRule}/deactivate', [VatRuleController::class, 'deactivate'])
+            ->name('deactivate');
+    });
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Order Line Operations
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/order-lines/{orderLine}/processed-quantity', [OrderLineController::class, 'updateProcessedQuantity'])
+        ->name('order-lines.processed-quantity');
+
+    Route::post('/order-lines/{orderLine}/cancel', [OrderLineController::class, 'cancel'])
+        ->name('order-lines.cancel');
 });

@@ -1,0 +1,445 @@
+FoamVillage CRM  DATABASE SCHEMA DUMP
+Database: new_foamvillage_crm
+Generated: 2026-01-26 23:16:38
+============================================================
+
+TABLE: cache
+------------------------------------------------------------
+key | varchar(255) | NULL: NO | KEY: PRI | DEFAULT: NULL
+value | mediumtext | NULL: NO | KEY:  | DEFAULT: NULL
+expiration | int | NULL: NO | KEY:  | DEFAULT: NULL
+
+TABLE: cache_locks
+------------------------------------------------------------
+key | varchar(255) | NULL: NO | KEY: PRI | DEFAULT: NULL
+owner | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+expiration | int | NULL: NO | KEY:  | DEFAULT: NULL
+
+TABLE: companies
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+legal_name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+company_number | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+vat_number | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+address_line1 | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+address_line2 | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+address_line3 | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+city | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+state_region | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+country | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+postcode | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+email | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+phone | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+website | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+logo_file_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+bank_account_name | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+bank_name | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+bank_sort_code | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+bank_account_number | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+bank_iban | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+bank_swift_bic | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+is_default | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 0
+status | enum('active','inactive') | NULL: NO | KEY:  | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: company_brands
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+company_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+brand_name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+logo_file_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+brand_email | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+brand_phone | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+brand_website | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+is_default_brand | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 0
+status | enum('active','inactive') | NULL: NO | KEY:  | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: credit_allocations
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+credit_note_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+invoice_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+amount_applied | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+applied_at | datetime | NULL: NO | KEY:  | DEFAULT: NULL
+notes | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: credit_notes
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+credit_note_number | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+issued_at | datetime | NULL: NO | KEY:  | DEFAULT: NULL
+reason | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+total_amount | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+currency | varchar(3) | NULL: NO | KEY:  | DEFAULT: GBP
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: customer_addresses
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+address_type | enum('registered','billing','delivery') | NULL: NO | KEY:  | DEFAULT: NULL
+address_line1 | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+address_line2 | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+address_line3 | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+city | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+state_region | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+country | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+postcode | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+is_default | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 0
+is_active | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+created_at | timestamp | NULL: NO | KEY:  | DEFAULT: CURRENT_TIMESTAMP
+deactivated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: customer_portfolio_offers
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+customer_product_portfolio_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+offer_type | enum('fixed_price','percentage_discount') | NULL: NO | KEY:  | DEFAULT: NULL
+created_by | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+fixed_price | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+percentage | decimal(5,2) | NULL: YES | KEY:  | DEFAULT: NULL
+discount_amount | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+minimum_quantity | int | NULL: YES | KEY:  | DEFAULT: NULL
+effective_from | datetime | NULL: NO | KEY:  | DEFAULT: NULL
+effective_to | datetime | NULL: YES | KEY:  | DEFAULT: NULL
+is_active | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+notes | text | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: customer_product_portfolio
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+product_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+product_variation_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+sellable_label | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+pricing_type | enum('fixed','formula') | NULL: NO | KEY:  | DEFAULT: fixed
+variation_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+agreed_price | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+formula_pricing_mode | enum('standard','rate_override','percentage_modifier') | NULL: YES | KEY:  | DEFAULT: NULL
+rate_override | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+percentage_modifier | decimal(5,2) | NULL: YES | KEY:  | DEFAULT: NULL
+minimum_charge | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+rounding_rule | enum('none','nearest_0.5','nearest_1') | NULL: YES | KEY:  | DEFAULT: NULL
+agreed_cost | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+effective_from | date | NULL: NO | KEY:  | DEFAULT: NULL
+effective_to | date | NULL: YES | KEY:  | DEFAULT: NULL
+is_active | tinyint(1) | NULL: NO | KEY: MUL | DEFAULT: 1
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: customer_status_history
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+old_status | enum('active','on_hold','blocked') | NULL: NO | KEY:  | DEFAULT: NULL
+new_status | enum('active','on_hold','blocked') | NULL: NO | KEY:  | DEFAULT: NULL
+reason | text | NULL: NO | KEY:  | DEFAULT: NULL
+changed_by | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+changed_at | timestamp | NULL: NO | KEY: MUL | DEFAULT: CURRENT_TIMESTAMP
+
+TABLE: customers
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+company_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+account_number | varchar(6) | NULL: NO | KEY: UNI | DEFAULT: NULL
+is_account_customer | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+contact_name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+email | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+primary_phone | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+secondary_phone | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+registered_company_name | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+customer_registration_number | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+vat_number | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+customer_status | enum('active','on_hold','blocked') | NULL: NO | KEY:  | DEFAULT: active
+credit_limit | decimal(12,2) | NULL: YES | KEY:  | DEFAULT: NULL
+payment_terms | enum('immediate','7_days','14_days','30_days','custom') | NULL: NO | KEY:  | DEFAULT: immediate
+internal_notes | text | NULL: YES | KEY:  | DEFAULT: NULL
+account_manager_user_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: delivery_note_lines
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+delivery_note_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+order_line_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+processed_quantity | int unsigned | NULL: NO | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: delivery_notes
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+invoice_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+order_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+delivery_address_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+delivery_note_number | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+type | enum('delivery','collection') | NULL: NO | KEY:  | DEFAULT: delivery
+status | enum('draft','issued') | NULL: NO | KEY:  | DEFAULT: draft
+issued_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+created_by | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: document_defaults
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+company_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+document_type | enum('invoice','delivery_note','all') | NULL: NO | KEY:  | DEFAULT: all
+header_title_source | enum('legal_company_name','brand_name','custom_text') | NULL: NO | KEY:  | DEFAULT: legal_company_name
+header_custom_text | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+header_logo_source | enum('company_logo','brand_logo','none') | NULL: NO | KEY:  | DEFAULT: company_logo
+footer_text_source | enum('legal_disclosure','custom_text','none') | NULL: NO | KEY:  | DEFAULT: legal_disclosure
+footer_custom_text | text | NULL: YES | KEY:  | DEFAULT: NULL
+legal_disclosure_text | text | NULL: YES | KEY:  | DEFAULT: NULL
+show_address | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+show_company_number | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+show_vat_number | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+show_bank_details | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: failed_jobs
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+uuid | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+connection | text | NULL: NO | KEY:  | DEFAULT: NULL
+queue | text | NULL: NO | KEY:  | DEFAULT: NULL
+payload | longtext | NULL: NO | KEY:  | DEFAULT: NULL
+exception | longtext | NULL: NO | KEY:  | DEFAULT: NULL
+failed_at | timestamp | NULL: NO | KEY:  | DEFAULT: CURRENT_TIMESTAMP
+
+TABLE: files
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+file_name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+file_type | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+file_path | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+uploaded_by | bigint unsigned | NULL: YES | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: foam_pricing_rules
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+product_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+foam_type_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+foam_type | varchar(255) | NULL: NO | KEY: MUL | DEFAULT: NULL
+density | varchar(255) | NULL: NO | KEY: MUL | DEFAULT: NULL
+price_unit | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+cost_unit | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+calculation_formula | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+status | enum('active','inactive') | NULL: NO | KEY: MUL | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: foam_types
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+calculation_method | varchar(255) | NULL: NO | KEY:  | DEFAULT: volume
+default_price_unit | decimal(10,4) | NULL: NO | KEY:  | DEFAULT: NULL
+default_cost_unit | decimal(10,4) | NULL: YES | KEY:  | DEFAULT: NULL
+status | enum('active','inactive') | NULL: NO | KEY:  | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: invoice_lines
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+invoice_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+description | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+note | text | NULL: YES | KEY:  | DEFAULT: NULL
+source | varchar(50) | NULL: YES | KEY:  | DEFAULT: NULL
+quantity | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+unit_price_ex_vat | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+vat_rate | decimal(5,2) | NULL: NO | KEY:  | DEFAULT: NULL
+vat_amount | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+line_total_inc_vat | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: invoices
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+invoice_number | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+delivery_note_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+issued_at | datetime | NULL: NO | KEY:  | DEFAULT: NULL
+due_date | date | NULL: YES | KEY:  | DEFAULT: NULL
+subtotal | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+vat_amount | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+total_amount | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+currency | varchar(3) | NULL: NO | KEY:  | DEFAULT: GBP
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: job_batches
+------------------------------------------------------------
+id | varchar(255) | NULL: NO | KEY: PRI | DEFAULT: NULL
+name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+total_jobs | int | NULL: NO | KEY:  | DEFAULT: NULL
+pending_jobs | int | NULL: NO | KEY:  | DEFAULT: NULL
+failed_jobs | int | NULL: NO | KEY:  | DEFAULT: NULL
+failed_job_ids | longtext | NULL: NO | KEY:  | DEFAULT: NULL
+options | mediumtext | NULL: YES | KEY:  | DEFAULT: NULL
+cancelled_at | int | NULL: YES | KEY:  | DEFAULT: NULL
+created_at | int | NULL: NO | KEY:  | DEFAULT: NULL
+finished_at | int | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: jobs
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+queue | varchar(255) | NULL: NO | KEY: MUL | DEFAULT: NULL
+payload | longtext | NULL: NO | KEY:  | DEFAULT: NULL
+attempts | tinyint unsigned | NULL: NO | KEY:  | DEFAULT: NULL
+reserved_at | int unsigned | NULL: YES | KEY:  | DEFAULT: NULL
+available_at | int unsigned | NULL: NO | KEY:  | DEFAULT: NULL
+created_at | int unsigned | NULL: NO | KEY:  | DEFAULT: NULL
+
+TABLE: migrations
+------------------------------------------------------------
+id | int unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+migration | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+batch | int | NULL: NO | KEY:  | DEFAULT: NULL
+
+TABLE: order_lines
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+order_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+product_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+product_variation_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+requested_quantity | int unsigned | NULL: NO | KEY:  | DEFAULT: NULL
+unit_price_ex_vat | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: 0.00
+vat_rate | decimal(5,2) | NULL: NO | KEY:  | DEFAULT: 0.00
+processed_quantity | int unsigned | NULL: NO | KEY:  | DEFAULT: 0
+line_status | enum('pending','fulfilled','cancelled') | NULL: NO | KEY:  | DEFAULT: pending
+notes | text | NULL: YES | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: orders
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+company_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+customer_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+order_number | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+source_channel | enum('staff_intake','customer_portal') | NULL: NO | KEY:  | DEFAULT: staff_intake
+status | enum('draft','submitted','acknowledged','in_progress','partially_fulfilled','fulfilled','cancelled','closed') | NULL: NO | KEY:  | DEFAULT: draft
+submitted_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+acknowledged_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+internal_notes | text | NULL: YES | KEY:  | DEFAULT: NULL
+created_by | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: password_reset_tokens
+------------------------------------------------------------
+email | varchar(255) | NULL: NO | KEY: PRI | DEFAULT: NULL
+token | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: payments
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+invoice_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+amount | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+currency | varchar(3) | NULL: NO | KEY:  | DEFAULT: GBP
+payment_method | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+payment_reference | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+paid_at | datetime | NULL: NO | KEY:  | DEFAULT: NULL
+notes | text | NULL: YES | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: product_categories
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+company_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+status | enum('active','inactive') | NULL: NO | KEY:  | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: product_options
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+option_name | varchar(255) | NULL: NO | KEY: MUL | DEFAULT: NULL
+price_modifier_type | enum('fixed_add','fixed_deduct','percentage') | NULL: NO | KEY:  | DEFAULT: NULL
+price_modifier_value | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+cost_modifier_value | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+status | enum('active','inactive') | NULL: NO | KEY: MUL | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: product_variations
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+product_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+length | decimal(8,2) | NULL: NO | KEY:  | DEFAULT: NULL
+width | decimal(8,2) | NULL: NO | KEY:  | DEFAULT: NULL
+thickness | decimal(8,2) | NULL: NO | KEY:  | DEFAULT: NULL
+size_unit | enum('inch','cm') | NULL: NO | KEY:  | DEFAULT: inch
+colour | varchar(255) | NULL: YES | KEY:  | DEFAULT: NULL
+variation_code | varchar(255) | NULL: YES | KEY: MUL | DEFAULT: NULL
+standard_price | decimal(10,2) | NULL: NO | KEY:  | DEFAULT: NULL
+standard_cost | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+status | enum('active','inactive') | NULL: NO | KEY: MUL | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: products
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+vat_rule_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+company_id | bigint unsigned | NULL: NO | KEY: MUL | DEFAULT: NULL
+category_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+product_name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+product_type | enum('simple','variant_based','rule_based') | NULL: NO | KEY: MUL | DEFAULT: simple
+manufacturing_type | enum('manufactured','imported') | NULL: NO | KEY: MUL | DEFAULT: NULL
+description | text | NULL: YES | KEY:  | DEFAULT: NULL
+simple_price | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+simple_cost | decimal(10,2) | NULL: YES | KEY:  | DEFAULT: NULL
+status | enum('active','inactive') | NULL: NO | KEY: MUL | DEFAULT: active
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: sessions
+------------------------------------------------------------
+id | varchar(255) | NULL: NO | KEY: PRI | DEFAULT: NULL
+user_id | bigint unsigned | NULL: YES | KEY: MUL | DEFAULT: NULL
+ip_address | varchar(45) | NULL: YES | KEY:  | DEFAULT: NULL
+user_agent | text | NULL: YES | KEY:  | DEFAULT: NULL
+payload | longtext | NULL: NO | KEY:  | DEFAULT: NULL
+last_activity | int | NULL: NO | KEY: MUL | DEFAULT: NULL
+
+TABLE: users
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+name | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+email | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+email_verified_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+password | varchar(255) | NULL: NO | KEY:  | DEFAULT: NULL
+remember_token | varchar(100) | NULL: YES | KEY:  | DEFAULT: NULL
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+
+TABLE: vat_rules
+------------------------------------------------------------
+id | bigint unsigned | NULL: NO | KEY: PRI | DEFAULT: NULL
+name | varchar(255) | NULL: NO | KEY: UNI | DEFAULT: NULL
+rate | decimal(5,2) | NULL: NO | KEY:  | DEFAULT: NULL
+is_default | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 0
+is_active | tinyint(1) | NULL: NO | KEY:  | DEFAULT: 1
+created_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL
+updated_at | timestamp | NULL: YES | KEY:  | DEFAULT: NULL

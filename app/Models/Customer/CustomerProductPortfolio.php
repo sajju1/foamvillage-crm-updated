@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CustomerProductPortfolio extends Model
 {
     protected $table = 'customer_product_portfolio';
+    
 
     protected $fillable = [
         'customer_id',
@@ -28,27 +29,37 @@ class CustomerProductPortfolio extends Model
         'is_active',
     ];
 
-    public function product()
+    /**
+     * Base product
+     */
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    
+    /**
+     * Canonical variation relationship (new)
+     */
+    public function productVariation(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariation::class, 'product_variation_id');
+    }
+
+    /**
+     * BACKWARD-COMPATIBILITY alias
+     * Required by existing portfolio module
+     */
+    public function variation(): BelongsTo
+    {
+        return $this->productVariation();
+    }
+
+    /**
+     * Offers linked to this portfolio entry
+     */
     public function offers()
     {
         return $this->hasMany(CustomerPortfolioOffer::class);
     }
-    public function portfolio()
-    {
-        return $this->hasMany(CustomerProductPortfolio::class);
-    }
-    public function variation(): BelongsTo
-    {
-        return $this->belongsTo(ProductVariation::class, 'variation_id');
-    }
-    public function productVariation(): BelongsTo
-{
-    return $this->belongsTo(ProductVariation::class, 'product_variation_id');
-}
-
+    
 }

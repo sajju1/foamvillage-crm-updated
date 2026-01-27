@@ -1,3 +1,108 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================================================
+   FoamVillage CRM – Component Layer
+   Tailwind-first, document-style UI
+   ========================================================= */
+
+@layer components {
+
+    /* ===============================
+       Base Button (internal use)
+       =============================== */
+    .crm-btn {
+        @apply inline-flex items-center gap-2
+               rounded-md
+               transition
+               focus:outline-none
+               focus:ring-2
+               focus:ring-offset-2
+               disabled:opacity-50
+               disabled:cursor-not-allowed;
+    }
+
+    /* ===============================
+       Primary Button
+       =============================== */
+    .crm-btn-primary {
+        @apply crm-btn
+               bg-blue-600 text-white
+               px-6 py-3
+               font-semibold
+               leading-tight
+               shadow-md
+               hover:bg-blue-700
+               hover:shadow-lg
+               focus:ring-blue-500
+               disabled:hover:bg-blue-600
+               disabled:hover:shadow-md;
+    }
+
+    /* ===============================
+       Secondary Button
+       =============================== */
+    .crm-btn-secondary {
+        @apply crm-btn
+               border border-gray-300
+               text-gray-700
+               px-6 py-3
+               font-medium
+               leading-tight
+               hover:bg-gray-100
+               focus:ring-gray-400
+               disabled:hover:bg-transparent;
+    }
+
+    /* ===============================
+       Danger / Destructive Button
+       =============================== */
+    .crm-btn-danger {
+        @apply crm-btn
+               bg-red-600 text-white
+               px-6 py-3
+               font-semibold
+               leading-tight
+               shadow-md
+               hover:bg-red-700
+               hover:shadow-lg
+               focus:ring-red-500
+               disabled:hover:bg-red-600
+               disabled:hover:shadow-md;
+    }
+
+}
+
+@media print {
+    body {
+        background: #fff !important;
+    }
+
+    aside,
+    nav,
+    header,
+    .print\:hidden {
+        display: none !important;
+    }
+
+    .print\:block {
+        display: block !important;
+    }
+
+    .shadow,
+    .shadow-sm,
+    .shadow-lg {
+        box-shadow: none !important;
+    }
+
+    table {
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+}
+

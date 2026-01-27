@@ -4,6 +4,8 @@ namespace App\Models\Product;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Company\Company;
+use App\Models\Vat\VatRule;
+
 
 class Product extends Model
 {
@@ -20,6 +22,8 @@ class Product extends Model
         // Simple product pricing
         'simple_price',
         'simple_cost',
+        'vat_rule_id',
+
     ];
 
     /*
@@ -42,6 +46,17 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariation::class);
     }
+
+    public function vatRule()
+{
+    return $this->belongsTo(VatRule::class);
+}
+
+public function effectiveVatRule()
+{
+    return $this->vatRule ?: VatRule::default();
+}
+
     public function getDisplayNameAttribute(): string
 {
     // If a proper name exists, use it

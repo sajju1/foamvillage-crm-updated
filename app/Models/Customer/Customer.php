@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Customer\CustomerProductPortfolio;
+use App\Models\Orders\Order;
+
 
 
 class Customer extends Model
@@ -28,6 +30,8 @@ class Customer extends Model
         'internal_notes',
         'account_manager_user_id',
         'customer_registration_number',
+        'is_account_customer',
+
 
     ];
 
@@ -71,7 +75,18 @@ class Customer extends Model
         return $this->belongsTo(User::class, 'account_manager_user_id');
     }
     public function portfolio()
+    {
+        return $this->hasMany(CustomerProductPortfolio::class);
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+    public function billingAddress()
 {
-    return $this->hasMany(CustomerProductPortfolio::class);
+    return $this->hasOne(CustomerAddress::class)
+        ->whereIn('address_type', ['billing', 'registered'])
+        ->where('is_active', true)
+        ->orderByDesc('is_default');
 }
 }

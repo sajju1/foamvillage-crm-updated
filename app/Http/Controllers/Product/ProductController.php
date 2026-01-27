@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Company\Company;
+use App\Models\Vat\VatRule; // ✅ ADDED: VAT rules
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,32 +15,31 @@ class ProductController extends Controller
     /**
      * Display a listing of products.
      */
-   public function index(\Illuminate\Http\Request $request)
-{
-    $query = \App\Models\Product\Product::query()
-        ->with(['company', 'category'])
-        ->orderBy('product_name');
+    public function index(\Illuminate\Http\Request $request)
+    {
+        $query = \App\Models\Product\Product::query()
+            ->with(['company', 'category']) // VAT not needed here yet
+            ->orderBy('product_name');
 
-    // Search (by product name)
-    if ($request->filled('q')) {
-        $q = trim($request->input('q'));
-        $query->where('product_name', 'like', "%{$q}%");
+        // Search (by product name)
+        if ($request->filled('q')) {
+            $q = trim($request->input('q'));
+            $query->where('product_name', 'like', "%{$q}%");
+        }
+
+        // Category filter
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        $products = $query->paginate(20)->withQueryString();
+
+        $categories = \App\Models\Product\ProductCategory::where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('products.index', compact('products', 'categories'));
     }
-
-    // Category filter
-    if ($request->filled('category_id')) {
-        $query->where('category_id', $request->input('category_id'));
-    }
-
-    $products = $query->paginate(20)->withQueryString();
-
-    $categories = \App\Models\Product\ProductCategory::where('status', 'active')
-        ->orderBy('name')
-        ->get();
-
-    return view('products.index', compact('products', 'categories'));
-}
-
 
     /**
      * Show the form for creating a new product.
@@ -54,6 +54,12 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
+        // ✅ ADDED: Active VAT rules for dropdown
+        $vatRules = VatRule::where('is_active', true)
+            ->orderByDesc('is_default')
+            ->orderBy('rate')
+            ->get();
+
         // Preselect default company
         $product = new Product();
         $defaultCompany = $companies->firstWhere('is_default', true);
@@ -61,9 +67,11 @@ class ProductController extends Controller
             $product->company_id = $defaultCompany->id;
         }
 
-        return view('products.create', compact('companies', 'categories', 'product'));
+        return view(
+            'products.create',
+            compact('companies', 'categories', 'product', 'vatRules') // ✅ ADDED
+        );
     }
-
 
     /**
      * Store a newly created product in storage.
@@ -82,6 +90,9 @@ class ProductController extends Controller
 
             'simple_price' => 'nullable|numeric|min:0',
             'simple_cost' => 'nullable|numeric|min:0',
+
+            // ✅ ADDED: VAT rule (optional, safe)
+            'vat_rule_id' => 'nullable|exists:vat_rules,id',
         ]);
 
         // Clean pricing for non-simple products
@@ -112,7 +123,16 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('products.edit', compact('product', 'companies', 'categories'));
+        // ✅ ADDED: Active VAT rules for dropdown
+        $vatRules = VatRule::where('is_active', true)
+            ->orderByDesc('is_default')
+            ->orderBy('rate')
+            ->get();
+
+        return view(
+            'products.edit',
+            compact('product', 'companies', 'categories', 'vatRules') // ✅ ADDED
+        );
     }
 
     /**
@@ -132,6 +152,9 @@ class ProductController extends Controller
 
             'simple_price' => 'nullable|numeric|min:0',
             'simple_cost' => 'nullable|numeric|min:0',
+
+            // ✅ ADDED: VAT rule update
+            'vat_rule_id' => 'nullable|exists:vat_rules,id',
         ]);
 
         // Clean pricing for non-simple products
