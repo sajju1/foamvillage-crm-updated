@@ -15,6 +15,12 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         $query = Invoice::query()->with('customer');
+        $applyCreditId = $request->query('apply_credit');
+        $customerFilter = $request->query('customer_id');
+
+        if ($customerFilter) {
+            $query->where('customer_id', $customerFilter);
+        }
 
         /* ================= SEARCH ================= */
         if ($search = $request->input('q')) {
@@ -92,11 +98,20 @@ class InvoiceController extends Controller
             ->latest('issued_at')
             ->paginate(20)
             ->withQueryString();
+        $applyCreditNote = null;
 
-        return view(
-            'staff.invoices.index',
-            compact('invoices', 'overdueCount', 'dueSoonCount')
-        );
+        if ($applyCreditId) {
+            $applyCreditNote = \App\Models\Finance\CreditNote::with('customer')
+                ->findOrFail($applyCreditId);
+        }
+
+
+        return view('staff.invoices.index', compact(
+            'invoices',
+            'overdueCount',
+            'dueSoonCount',
+            'applyCreditNote'
+        ));
     }
 
     public function show(Invoice $invoice)
@@ -110,6 +125,7 @@ class InvoiceController extends Controller
         ]);
 
         $company = Company::first();
+
 
         return view('staff.invoices.show', compact('invoice', 'company'));
     }

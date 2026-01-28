@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Credit;
+namespace App\Models\Finance;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -8,6 +8,8 @@ use App\Models\Invoice\Invoice;
 
 class CreditAllocation extends Model
 {
+    protected $table = 'credit_allocations';
+
     protected $fillable = [
         'credit_note_id',
         'invoice_id',
@@ -21,11 +23,13 @@ class CreditAllocation extends Model
         'applied_at'     => 'datetime',
     ];
 
-    /* ================= RELATIONSHIPS ================= */
+    /* -----------------------------------------------------------------
+     | Relationships
+     |------------------------------------------------------------------*/
 
     public function creditNote(): BelongsTo
     {
-        return $this->belongsTo(CreditNote::class);
+        return $this->belongsTo(CreditNote::class, 'credit_note_id');
     }
 
     public function invoice(): BelongsTo

@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        $hasAvailableCredit =
+            $invoice->balance_due > 0 &&
+            $invoice->customer->creditNotes->filter(fn($credit) => $credit->remaining_amount > 0)->isNotEmpty();
+    @endphp
+
     <div class="max-w-6xl mx-auto px-6 py-8">
 
         {{-- ================= HEADER / ACTIONS ================= --}}
@@ -37,6 +43,16 @@
                 <button type="button" onclick="openPaymentsModal()" class="crm-btn-secondary">
                     💳 Payments
                 </button>
+
+                @if ($hasAvailableCredit)
+                    <a href="#apply-credit" class="crm-btn-secondary">
+                        ➕ Apply Credit
+                    </a>
+                @endif
+
+
+
+
 
                 <span
                     class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
@@ -179,4 +195,9 @@
     </script>
 
     @include('staff.invoices.partials.payments-modal')
+    @include('staff.invoices.partials.apply-credit')
+    @include('staff.invoices.partials.applied-credits')
+    @include('staff.invoices.partials.payment-allocations')
+
+
 @endsection

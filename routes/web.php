@@ -69,6 +69,16 @@ use App\Http\Controllers\Staff\Invoice\UpdateInvoiceLineNoteController;
 use App\Http\Controllers\Staff\Invoice\AddInvoiceLineController;
 
 
+use App\Http\Controllers\Staff\Payment\CustomerPaymentController;
+use App\Http\Controllers\Staff\Invoice\ApplyCreditController;
+use App\Http\Controllers\Staff\Finance\CreditNote\CreateCreditNoteController;
+use App\Http\Controllers\Staff\Finance\CreditNote\CreditNoteController;
+
+use App\Http\Controllers\Staff\Statement\CustomerStatementController;
+
+
+
+
 
 
 /*
@@ -447,6 +457,78 @@ Route::middleware(['auth'])->prefix('staff')->name('staff.')->group(function () 
         '/invoices/send-overdue-reminders',
         [InvoiceController::class, 'sendBulkOverdueReminders']
     )->name('invoices.send-overdue-reminders');
+
+    /*
+|--------------------------------------------------------------------------
+| Payments (Module 07 – Customer Payments ONLY)
+|--------------------------------------------------------------------------
+| IMPORTANT:
+| - This module handles customer / one-off payments only
+| - Invoice-level payments are handled exclusively by Invoice module
+| - Do NOT add invoice payments here
+*/
+
+    Route::get('/payments', [CustomerPaymentController::class, 'index'])
+        ->name('payments.index');
+
+    Route::get('/payments/create', [CustomerPaymentController::class, 'create'])
+        ->name('payments.create');
+
+    /*
+| Customer-scoped payment creation
+| (used by customer show page tab)
+*/
+    Route::get('/customers/{customer}/payments/create', [CustomerPaymentController::class, 'createForCustomer'])
+        ->name('customers.payments.create');
+
+    Route::post('/payments', [CustomerPaymentController::class, 'store'])
+        ->name('payments.store');
+    Route::get(
+        '/payments/{payment}',
+        [\App\Http\Controllers\Staff\Payment\PaymentHistoryController::class, 'show']
+    )->name('payments.show');
+    Route::post(
+        '/invoices/{invoice}/apply-credit',
+        [ApplyCreditController::class, 'store']
+    )->name('invoices.apply-credit');
+
+    Route::get(
+        '/credit-notes/create',
+        [CreateCreditNoteController::class, 'create']
+    )->name('credit-notes.create');
+
+    Route::post(
+        '/credit-notes',
+        [CreateCreditNoteController::class, 'store']
+    )->name('credit-notes.store');
+
+    Route::get(
+        '/credit-notes',
+        [CreditNoteController::class, 'index']
+    )->name('credit-notes.index');
+
+    Route::get(
+        '/credit-notes/{creditNote}',
+        [\App\Http\Controllers\Staff\Finance\CreditNote\CreditNoteController::class, 'show']
+    )->name('credit-notes.show');
+
+    Route::get('/statements', [CustomerStatementController::class, 'index'])
+        ->name('statements.index');
+
+    Route::get('/statements/{customer}', [CustomerStatementController::class, 'show'])
+        ->name('statements.show');
+
+    Route::get(
+        '/statements/{customer}/pdf',
+        [\App\Http\Controllers\Staff\Statement\CustomerStatementController::class, 'pdf']
+    )->name('statements.pdf');
+
+    Route::post(
+        '/staff/statements/{customer}/email',
+        [\App\Http\Controllers\Staff\Statement\CustomerStatementController::class, 'email']
+    )->name('statements.email');
+
+
 
 
 

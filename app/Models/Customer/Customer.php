@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Customer\CustomerProductPortfolio;
 use App\Models\Orders\Order;
+use App\Models\Finance\CreditNote;
+
 
 
 
@@ -83,10 +85,14 @@ class Customer extends Model
         return $this->hasMany(Order::class);
     }
     public function billingAddress()
-{
-    return $this->hasOne(CustomerAddress::class)
-        ->whereIn('address_type', ['billing', 'registered'])
-        ->where('is_active', true)
-        ->orderByDesc('is_default');
-}
+    {
+        return $this->hasOne(CustomerAddress::class)
+            ->whereIn('address_type', ['billing', 'registered'])
+            ->where('is_active', true)
+            ->orderByDesc('is_default');
+    }
+    public function creditNotes()
+    {
+        return $this->hasMany(CreditNote::class);
+    }
 }

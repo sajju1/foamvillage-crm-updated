@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Customer\Customer;
 use App\Models\Delivery\DeliveryNote;
 use App\Models\Payment\Payment;
-use App\Models\Credit\CreditAllocation;
+use App\Models\Finance\CreditAllocation;
 use Illuminate\Support\Carbon;
+use App\Models\Payment\PaymentAllocation;
+
+
 
 
 class Invoice extends Model
@@ -67,33 +70,52 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceLine::class);
     }
+    public function paymentAllocations()
+    {
+        return $this->hasMany(PaymentAllocation::class);
+    }
 
     /* ================= DERIVED FINANCIALS ================= */
 
     public function getTotalPaidAttribute(): float
     {
-        $payments = $this->payments->sum('amount');
-        $credits  = $this->creditAllocations->sum('amount_applied');
+        $invoicePayments = $this->payments->sum('amount');
 
-        return (float) ($payments + $credits);
+        $customerAllocations = $this->paymentAllocations->sum('allocated_amount');
+
+        $credits = $this->creditAllocations->sum('amount_applied');
+
+        return (float) ($invoicePayments + $customerAllocations + $credits);
     }
+
 
     public function getBalanceDueAttribute(): float
     {
-        return (float) ($this->total_amount - $this->total_paid);
+        $paid = (float) $this->total_paid;
+        $credits = (float) $this->total_credits_applied;
+
+        $balance = $this->total_amount - ($paid + $credits);
+
+        return max(0, (float) $balance);
     }
+
 
     public function getStatusAttribute(): string
     {
-        if ($this->total_paid <= 0) {
-            return 'issued';
+        if ($this->balance_due <= 0) {
+            return 'paid';
         }
 
-        if ($this->total_paid < $this->total_amount) {
+        if ($this->total_paid > 0 || $this->total_credits_applied > 0) {
             return 'partially_paid';
         }
 
-        return 'paid';
+        return 'issued';
+    }
+
+    public function getTotalCreditsAppliedAttribute(): float
+    {
+        return (float) $this->creditAllocations()->sum('amount_applied');
     }
 
     /**
